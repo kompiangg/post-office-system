@@ -35,7 +35,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-### Specifically for my local machine ###
+### Specifically for my workspace###
 *.vsdx
 test.*
 main.exe
