@@ -148,3 +148,75 @@ void tspBacktracking() {
         printf("\n");
     }
 }
+
+// main
+
+int main() {
+    int pilihan;
+    void (*menuPilihan[5])();
+//     menuPilihan[0] = shortestPath;
+    menuPilihan[1] = tspBacktracking;
+//     menuPilihan[2] = cppEulerianCycle;
+//     menuPilihan[3] = algoritmaPrim;
+//     menuPilihan[4] = algoritmaKruskal;
+
+    do {
+        cleanScreen(0);
+        printf("Selamat datang bapak/ibu manajer, mohon masukkan jumlah kota yang ingin anda analisa: ");
+        scanf("%d", &jmlNode);
+
+        cleanScreen(0);
+        printf("Jumlah kota yang akan dianalisis: %d", jmlNode);
+        mTetangga[jmlNode][jmlNode];
+        printf("\nMohon beri detail jarak antar kota sebagai berikut (0 jika tidak terhubung):\n");
+        jmlEdgeMurni = 0;
+
+        for (int i = 0; i < jmlNode; i++) {
+            for (int j = (i + 1); j < jmlNode; j++) {
+                printf("Kota %d ke kota %d: ", i, j);
+                scanf("%d", &pilihan); // comment baris ini jika ingin menggunakan matriks yang sudah ditentukan
+
+                mTetangga[i][j] = pilihan; // comment baris ini jika ingin menggunakan matriks yang sudah ditentukan
+                mTetangga[j][i] = pilihan; // comment baris ini jika ingin menggunakan matriks yang sudah ditentukan
+
+                jmlEdgeMurni++;
+
+                if (mTetangga[i][j] > 0) {
+                    jmlEdgeSangatMurni++;
+                }
+            }
+        }
+
+        cleanScreen(0);
+        printf("Berikut matriks ketetanggaan dari kota yang akan bapak/ibu manajer analisa:\n");
+         for (int i = 0; i < jmlNode; i++) {
+            for (int j = 0; j < jmlNode; j++) {
+                printf("%d ", mTetangga[i][j]);
+            }
+            printf("\n");
+        }
+        konfirmasiLanjut();
+        cleanScreen(0);
+
+        do {
+            printf("Apakah yang ingin bapak/ibu manajer analisa dari kota tersebut?\n");
+            printf("1. Mencari jalan terpendek dari kota X ke kota Y (Shortest Path)\n2. Mencari rute terpendek dari kumpulan kota tersebut (Traveling Salesman Problem)\n3. Mencari rute terpendek dari kumpulan jalan yang ada (Chinese Postman Problem)\n4. Mencari jangkauan terpendek menggunakan Algoritma Prim\n5. Mencari jangkauan terpendek menggunakan Algoritma Kruskal\n6. Akhiri program\nPilihan: ");
+            scanf("%d", &pilihan);
+            if (pilihan > 0 && pilihan < 7) {
+                pilihan = pilihan - 1;
+                if (pilihan < 5) {
+                    menuPilihan[pilihan]();
+                }
+                cleanScreen(0);
+            } else {
+                cleanScreen(0);
+                printf("Bapak/ibu manajer memasukkan pilihan yang tidak tersedia\n");
+            }
+        }
+        while (pilihan != 5);
+
+    }
+    while (pilihan == 7);
+
+    return 0;
+}
