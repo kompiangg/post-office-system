@@ -11,6 +11,7 @@
 #endif
 
 #define TRUCK_SIZE 100 // Dalam Kg
+#define MAX_A_DAY 300 // Dalam Kg
 
 typedef struct user {
     char username[25], password[25];
@@ -21,7 +22,7 @@ typedef struct gudang {
 } gudang;
 
 typedef struct barang {
-    int berat, volume;
+    unsigned int berat, volume;
     char pengirim[50], penerima[50], alamat[75];
     char no_telp[13];
     struct barang *next;
@@ -109,16 +110,19 @@ barang *buffer_barang() {
     printf("Masukkan nama penerima : ");
     scanf("%[^\n]", temp_input->penerima);
     getchar();
+    printf("Masukkan alamat penerima : ");
+    scanf("%[^\n]", temp_input->alamat);
+    getchar();
     printf("Masukkan nomor telepon penerima : ");
     scanf("%[^\n]", temp_input->no_telp);
     getchar();
 
     puts("Data barang");
     puts("Masukan berat barang (dalam kg): ");
-    scanf("%d", &(temp_input->berat));
+    scanf("%u", &(temp_input->berat));
     getchar();
     puts("Masukan volume barang (dalam m^3): ");
-    scanf("%d", &(temp_input->volume));
+    scanf("%u", &(temp_input->volume));
     getchar();
 
     gudang_bali.banyak++;
@@ -152,12 +156,83 @@ void insert(barang **ptr_head) {
     }
 }
 
-int main() {
-    char menu;
-    barang *list_barang;
-    int counter = 0;
-    container truck[3];
+void lihat_gudang(barang *ptr_head) {
+    barang *temp = ptr_head;
 
+    if (temp != NULL) {
+        puts("=====================================================");
+        do
+        {
+            printf("Alamat   : %s\n", temp->alamat);
+            printf("Penerima : %s\n", temp->penerima);
+            printf("Pengirim : %s\n", temp->pengirim);
+            printf("No telp  : %s\n", temp->no_telp);
+            printf("Berat    : %u\n", temp->berat);
+            printf("Volume   : %u\n", temp->volume);
+            puts("=====================================================");
+            temp = temp->next;
+        } while (temp != NULL);        
+    }
+    else{
+        printf("NULL");
+    }
+    puts(" ");
+}
+
+void list_akan_dikirim(barang **list_barang, container *truck){
+    //dequeue
+    barang *temp = *list_barang;
+    while((truck->berat_muatan += temp->berat) <= TRUCK_SIZE) {
+        truck->banyak_barang++;
+        gudang_bali.banyak--;
+        gudang_bali.berat -= temp->berat;
+        if(temp->next != NULL) temp = temp->next;
+        else break;
+    }
+    if (truck->berat_muatan > TRUCK_SIZE) {
+        truck->berat_muatan -= temp->berat;
+        truck->banyak_barang--;
+        gudang_bali.banyak++;
+        gudang_bali.berat += temp->berat;
+    }
+    truck->muatan = (barang*) malloc(truck->banyak_barang * sizeof(barang));
+    for (int i = 0 ; i < truck->banyak_barang ; i++) {
+        truck->muatan[i] = **list_barang;
+        *list_barang = (*list_barang)->next;
+    }
+}
+
+void sort(barang *unsorted, int banyak_barang) {
+    printf("here2");
+    int banyak_unsorted = banyak_barang;
+    barang temp;
+    for (int i = banyak_unsorted - 1; i > 0;i--) {
+        for(int j = 0 ; j < i ; j++) {
+            if (unsorted[j].volume > unsorted[j + 1].volume) {
+                temp = unsorted[j];
+                unsorted[j] = unsorted[j+1];
+                unsorted[j+1] = temp;
+            }
+        }
+    }
+}
+
+void masuk_truck(container *list, container *truck) {
+    truck->banyak_barang = list->banyak_barang;
+    truck->berat_muatan = list->berat_muatan;
+    truck->muatan = (barang*) malloc(list->banyak_barang * sizeof(barang));
+    for (int i = 0 ; i < list->banyak_barang ; i++) truck->muatan[i] = list->muatan[i];
+}
+
+int main() {
+    barang *list_barang_gudang = NULL, *temp;
+    int counter = 0, partai_bali = 0, partai_jawa = 0, menu;
+    int banyak_barang_truck = 0, berat_barang_truck = 0;
+    container truck[3], list_kirim = {.berat_muatan = 0, .banyak_barang = 0};
+
+    for (int i = 0 ; i < 3 ; i++) { 
+        truck[i].berat_muatan = 0; truck[i].banyak_barang = 0;
+    }
     while (1) {
         puts("==================");
         puts(" 1. Gudang Bali ");
@@ -172,14 +247,40 @@ int main() {
             puts("Selamat datang di Gudang Bali");
             // puts("Silakan login");
             while(1) {
-                puts("Apakah terdapat pelanggan (y jika ada)? ");
-                if (getchar() == 'y') {
-                    getchar();
+                puts("MENU");
+                puts("1. Input barang ke gudang");
+                puts("2. Memasukan barang ke truck");
+                puts("3. Melihat isi gudang");
+                puts("4. Kembali");
+                scanf("%d", &menu);
+                getchar();
+                if (menu == 1) {
                     puts("Masukan keterangan barang");
-                    counter == 0 ? list_barang = buffer_barang() : insert(&list_barang);
+                    counter == 0 ? list_barang_gudang = buffer_barang() : insert(&list_barang_gudang);
+                    counter++;
                 }
-                counter++;
-
+                else if (menu == 2) {
+                    list_akan_dikirim(&list_barang_gudang, &list_kirim);
+                    sort(list_kirim.muatan, list_kirim.banyak_barang);
+                    masuk_truck(&list_kirim, &truck[partai_bali]);
+                    puts("Barang di dalam truck");
+                    puts("=====================================================");
+                    for(int i = 0 ; i < truck[partai_bali].banyak_barang ; i++) {
+                        printf("Alamat   : %s\n", truck[partai_bali].muatan[i].alamat);
+                        printf("Penerima : %s\n", truck[partai_bali].muatan[i].penerima);
+                        printf("Pengirim : %s\n", truck[partai_bali].muatan[i].pengirim);
+                        printf("No telp  : %s\n", truck[partai_bali].muatan[i].no_telp);
+                        printf("Berat    : %u\n", truck[partai_bali].muatan[i].berat);
+                        printf("Volume   : %u\n", truck[partai_bali].muatan[i].volume);
+                        puts("=====================================================");
+                    }
+                }
+                else if (menu == 3) {
+                    lihat_gudang(list_barang_gudang);
+                }
+                else if (menu == 4) {
+                    break;
+                }
             }
         }
         else if (menu == 2) {
