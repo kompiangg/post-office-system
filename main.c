@@ -274,7 +274,7 @@ void masuk_truck(container *list, container *truck) {
 barang *masuk_gudang_jawa(container *truck, int partai) {
     barang *head = NULL, *temp_node, *temp;
     
-    for(int i = 0 ; i < truck[partai].banyak_barang ; i++) {
+    for(int i = truck[partai].banyak_barang - 1; i > 0 ; i--) {
         temp_node = (barang*) malloc(sizeof(barang));
         *temp_node = truck[partai].muatan[i];
         gudang_jawa.banyak++;
@@ -282,12 +282,12 @@ barang *masuk_gudang_jawa(container *truck, int partai) {
         temp_node->next = NULL;
         
         if (head == NULL) {
-            *head = *temp_node;
+            head = temp_node;
         }
         else {
-            *temp = *head;
+            temp = head;
             while (temp->next != NULL) temp = temp->next;
-            *temp->next = *temp_node;
+            temp->next = temp_node;
         }
     }
     return head;
@@ -451,7 +451,7 @@ int main() {
                     }
                 }
                 else if (menu == 2) {
-
+                    
                 }
                 else if (menu == 3) {
                     lihat_gudang(list_barang_gudang_jawa);
