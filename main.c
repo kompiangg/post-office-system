@@ -392,6 +392,7 @@ int main() {
         else if (menu == 3) {
             // DONT TOUCH!!!!!
             // ITS WORK
+            // passss
             clear();
             puts("HALAMAN ADMIN");
             char user_admin[6], *pwd_admin;
