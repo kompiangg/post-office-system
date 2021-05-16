@@ -52,3 +52,8 @@ solutionset ditmeukan & sudah final.
 - Yang penting ada matriks tetangga, ada jumlah total vertex, aman.
 - Matriks tetangga boleh isi bobot, 1 0 1 0 cukup.
 - Input vertex awal keberangkatan
+
+// checkout
+// revert
+// reset
+// git graph
