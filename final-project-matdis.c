@@ -4,7 +4,7 @@
 #define MAX_INTEGER 2147483647
 
 int jmlNode = 6, jmlEdgeMurni; jmlEdgeSangatMurni;
-
+// perubahan
 
 // int mTetangga[100][100]; //comment baris ini jika ingin menggunakan matriks yang sudah ditentukan
 
