@@ -3,10 +3,10 @@
 
 #define MAX_INTEGER 2147483647
 
-int jmlNode, jmlEdgeMurni; jmlEdgeSangatMurni;
+int jmlNode = 6, jmlEdgeMurni; jmlEdgeSangatMurni;
 
 
-int mTetangga[100][100]; //comment baris ini jika ingin menggunakan matriks yang sudah ditentukan
+// int mTetangga[100][100]; //comment baris ini jika ingin menggunakan matriks yang sudah ditentukan
 
 
 // List matriks yang sudah kami siapkan jika Ibu ingin memeriksa program kami dengan cepat (dapat digunakan)
@@ -28,14 +28,14 @@ int mTetangga[100][100]; //comment baris ini jika ingin menggunakan matriks yang
 // };
 
 // Matriks dengan 6 Node, dibuat sedemikian rupa agar backtracking terjadi dalam proses Traveling Salesman Problem
-// int mTetangga[6][6] = {s
-//     {0, 1, 1, 0, 0, 0},
-//     {1, 0, 0, 1, 1, 0},
-//     {1, 0, 0, 1, 0, 0},
-//     {0, 1, 1, 0, 0, 1},
-//     {0, 1, 0, 0, 0, 1},
-//     {0, 0, 0, 1, 1, 0}
-// };
+int mTetangga[6][6] = {
+    {0, 1, 1, 0, 0, 0},
+    {1, 0, 0, 1, 1, 0},
+    {1, 0, 0, 1, 0, 0},
+    {0, 1, 1, 0, 0, 1},
+    {0, 1, 0, 0, 0, 1},
+    {0, 0, 0, 1, 1, 0}
+};
 
 //Matriks dengan 9 Node, dibuat sedimikian rupa
 // int mTetangga[9][9] = {
@@ -363,35 +363,46 @@ void tspBacktracking() {
     cleanScreen(2);
     printf("\nMemulai algoritma Backtracking untuk mencari Konsep Hamilton Cycle");
     printf("\nMemasukkan kota start kedalam Stack");
+    // kotaBaru ini maksudnya solutionset yang dibuat jadi LinkedList
     kotaBaru = (Node*) malloc(sizeof(Node));
     kotaBaru->jarakDariPrev = 0;
     kotaBaru->kota = awal;
     kotaBaru->next = NULL;
     kotaBaru->prev = NULL;
 
+    // ini inisialisasi ngasi tau bahwa setiap node BELUM penrah divisit
+    // karena nanti pakai backtracking.
     for (int i = 0; i < jmlNode; i++) {
         kotaBaru->nodePernahDivisit[i] = 0;
     }
 
+    // circular doubly linkedlist
     head = kotaBaru;
     tail = kotaBaru;
 
+    // stop kalok misalkan dia kembali ke awal dan semua tetangga ada di solution set (success)
+    // atau kembali ke awal dan semua tetangga sudah di visit, tetapi tidak semua ada di solution set (fail)
     stop = 0;
+    // skip = 1 itu artinya kalau ditemuin tetangga yang belum pernah di visit
     skip = 0;
     while (stop == 0) {
 
         kotaBaru = head;
         nodeDalamStack = 1;
+        // ini untuk keperuan ngeprint node saja, ngecek berapa jumlah node didalam linkedlist solution set
         while (kotaBaru->next != NULL) {
             kotaBaru = kotaBaru->next;
             nodeDalamStack++;
         }
         printf("\nJml Node dalam Stack: %d", nodeDalamStack);
-        
+        // reset state skip
         skip = 0;
+        // for loop untuk ngecek tetangga apakah dia sudah pernah divsit oleh node yang sedang ditunjuk
         for (int i = 0; i < jmlNode; i++) {
+            // kalok ketemu tetangga, dia bukan node awal, belum di skip, brarti gass cek
             if (i != tail->kota && mTetangga[tail->kota][i] > 0 && i != awal && skip == 0) {
                 kotaBaru = head;
+                // nodesebelum = 0 itu artinya node yang ditunjuk belum ada di solution set
                 nodeSebelum = 0;
                 while (kotaBaru->next != NULL) {
                     kotaBaru = kotaBaru->next;
@@ -431,6 +442,8 @@ void tspBacktracking() {
 
                     skip = 1;
                 }
+                // ini else if untuk misalkan solusi ditemukan 
+                // kalok yang lagi diperiksa == awal, dan nodeDalam solution set sama dengan jumlah node
             } else if (i == awal && nodeDalamStack == jmlNode && mTetangga[tail->kota][i] > 0) {
                 kotaBaru = (Node*) malloc(sizeof(Node));
 
@@ -457,7 +470,8 @@ void tspBacktracking() {
                 konfirmasiLanjut();
             }
         }
-
+        // atau kalok kembali ke awal tetapi solutionset belum sebanyak jumlah kota
+        // atau jalan buntu tetapi belum kembali ke awal
         if (skip == 0) {
             if (tail->prev != NULL) {
                 kotaBaru = tail->prev;
@@ -472,6 +486,7 @@ void tspBacktracking() {
                 
                 free(tail);
                 tail = kotaBaru;
+                // ini kalok gagal
             } else {
                 printf("\nBacktracking kembali ke Node awal dan tidak menemukan tetangga lainnya yang belum dikunjungi");
                 printf("\nSepertinnya tidak terdapat solusi untuk Traveling Salesman Problem pada kota yang anda analisa, mohon maaf :(\n");
@@ -749,29 +764,29 @@ int main() {
     do {
         cleanScreen(0);
         printf("Selamat datang bapak/ibu manajer, mohon masukkan jumlah kota yang ingin anda analisa: ");
-        scanf("%d", &jmlNode);
+        // scanf("%d", &jmlNode);
 
         cleanScreen(0);
-        printf("Jumlah kota yang akan dianalisis: %d", jmlNode);
-        mTetangga[jmlNode][jmlNode];
-        printf("\nMohon beri detail jarak antar kota sebagai berikut (0 jika tidak terhubung):\n");
-        jmlEdgeMurni = 0;
+        // printf("Jumlah kota yang akan dianalisis: %d", jmlNode);
+        // mTetangga[jmlNode][jmlNode];
+        // printf("\nMohon beri detail jarak antar kota sebagai berikut (0 jika tidak terhubung):\n");
+        // jmlEdgeMurni = 0;
 
-        for (int i = 0; i < jmlNode; i++) {
-            for (int j = (i + 1); j < jmlNode; j++) {
-                printf("Kota %d ke kota %d: ", i, j);
-                scanf("%d", &pilihan); // comment baris ini jika ingin menggunakan matriks yang sudah ditentukan
+        // for (int i = 0; i < jmlNode; i++) {
+        //     for (int j = (i + 1); j < jmlNode; j++) {
+        //         printf("Kota %d ke kota %d: ", i, j);
+        //         scanf("%d", &pilihan); // comment baris ini jika ingin menggunakan matriks yang sudah ditentukan
 
-                mTetangga[i][j] = pilihan; // comment baris ini jika ingin menggunakan matriks yang sudah ditentukan
-                mTetangga[j][i] = pilihan; // comment baris ini jika ingin menggunakan matriks yang sudah ditentukan
+        //         mTetangga[i][j] = pilihan; // comment baris ini jika ingin menggunakan matriks yang sudah ditentukan
+        //         mTetangga[j][i] = pilihan; // comment baris ini jika ingin menggunakan matriks yang sudah ditentukan
 
-                jmlEdgeMurni++;
+        //         jmlEdgeMurni++;
 
-                if (mTetangga[i][j] > 0) {
-                    jmlEdgeSangatMurni++;
-                }
-            }
-        }
+        //         if (mTetangga[i][j] > 0) {
+        //             jmlEdgeSangatMurni++;
+        //         }
+        //     }
+        // }
 
         cleanScreen(0);
         printf("Berikut matriks ketetanggaan dari kota yang akan bapak/ibu manajer analisa:\n");

@@ -35,4 +35,20 @@ for (int i = 0; i < jmlNode; i++) {
 ```
 
 ### 4. Panggil Hamiltonian
-### 5. 
+### 5. Proses Hamiltonian
+#### 5.1. Pakai LinkedList untuk SolutionSet
+#### 5.2. Cek setiap tetangga dari vertex yang diuji
+5.2.1. Tetangga belum visited & bukan di awal & bukan dirinya sendiri, maka masukkan ke solutionset
+5.2.2. Tetangga belum visited & di awal & jumlah solutionset = jumlah total vertex, maka
+solutionset ditmeukan & sudah final.
+5.2.3. Tidak ditemukan tetangga, backtracking
+5.2.4. Ditemukan tetangga tetapi itu "awal", dan solutionset tidak sama dengan jumlah total vertex, maka backtracking
+#### 5.3. Kalok terus backtracking sampai kembali ke awal dan setiap tetangga di awal sudah visited, maka tidak ada solutionset
+#### 5.4. Tetangga belum visited & di awal & jumlah solutionset = jumlah total vertex, maka
+solutionset ditmeukan & sudah final.
+
+
+# Cara Integrasi
+- Yang penting ada matriks tetangga, ada jumlah total vertex, aman.
+- Matriks tetangga boleh isi bobot, 1 0 1 0 cukup.
+- Input vertex awal keberangkatan
