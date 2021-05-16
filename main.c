@@ -36,7 +36,7 @@ typedef struct container {
 } container;
 
 user account[2][MAX_ACCOUNT];
-gudang gudang_bali = {.banyak = 0, .berat = 0};
+gudang gudang_bali = {.banyak = 0, .berat = 0}, gudang_jawa = {.banyak = 0, .berat = 0};
 
 void init_table() {
     for (int i = 0 ; i < MAX_ACCOUNT ; i++) {
@@ -136,7 +136,7 @@ void clear() {
     #endif
 }
 
-barang *buffer_barang() {
+barang *initialize_node_barang() {
     barang *head = NULL, *temp_input = NULL, *temp_node;
 
     temp_input = (barang*) malloc(sizeof(barang));
@@ -185,7 +185,14 @@ barang *buffer_barang() {
 void insert(barang **ptr_head) {
     barang *will_insert, *temp = *ptr_head;
 
-    will_insert = buffer_barang();
+    will_insert = initialize_node_barang();
+    if (gudang_bali.berat > MAX_A_DAY) {
+        puts("Sudah melebihi kuota dalam sehari");
+        gudang_bali.banyak--;
+        gudang_bali.berat -= will_insert->berat;
+        return;
+    }
+
     while (temp != NULL) {
         if (temp->next == NULL) {
             temp->next = will_insert;
@@ -202,9 +209,9 @@ void lihat_gudang(barang *ptr_head) {
         puts("=====================================================");
         do
         {
-            printf("Alamat   : %s\n", temp->alamat);
             printf("Penerima : %s\n", temp->penerima);
             printf("Pengirim : %s\n", temp->pengirim);
+            printf("Alamat   : %s\n", temp->alamat);
             printf("No telp  : %s\n", temp->no_telp);
             printf("Berat    : %u\n", temp->berat);
             printf("Volume   : %u\n", temp->volume);
@@ -247,7 +254,7 @@ void sort(barang *unsorted, int banyak_barang) {
     barang temp;
     for (int i = banyak_unsorted - 1; i > 0;i--) {
         for(int j = 0 ; j < i ; j++) {
-            if (unsorted[j].volume > unsorted[j + 1].volume) {
+            if (unsorted[j].volume < unsorted[j + 1].volume) {
                 temp = unsorted[j];
                 unsorted[j] = unsorted[j+1];
                 unsorted[j+1] = temp;
@@ -257,18 +264,41 @@ void sort(barang *unsorted, int banyak_barang) {
 }
 
 void masuk_truck(container *list, container *truck) {
+    // Push proccess
     truck->banyak_barang = list->banyak_barang;
     truck->berat_muatan = list->berat_muatan;
     truck->muatan = (barang*) malloc(list->banyak_barang * sizeof(barang));
     for (int i = 0 ; i < list->banyak_barang ; i++) truck->muatan[i] = list->muatan[i];
 }
 
+barang *masuk_gudang_jawa(container *truck, int partai) {
+    barang *head = NULL, *temp_node, *temp;
+    
+    for(int i = 0 ; i < truck[partai].banyak_barang ; i++) {
+        temp_node = (barang*) malloc(sizeof(barang));
+        *temp_node = truck[partai].muatan[i];
+        gudang_jawa.banyak++;
+        gudang_jawa.berat += temp_node->berat;
+        temp_node->next = NULL;
+        
+        if (head == NULL) {
+            *head = *temp_node;
+        }
+        else {
+            *temp = *head;
+            while (temp->next != NULL) temp = temp->next;
+            *temp->next = *temp_node;
+        }
+    }
+    return head;
+}
+
 int main() {
-    barang *list_barang_gudang = NULL, *temp;
+    barang *list_barang_gudang_bali = NULL, *list_barang_gudang_jawa = NULL;
     int counter = 0, partai_bali = 0, partai_jawa = 0, menu;
     int banyak_barang_truck = 0, berat_barang_truck = 0, kembali;
     container truck[3], list_kirim = {.berat_muatan = 0, .banyak_barang = 0};
-    char user_username[50], *user_password;
+    char user_username[50], *user_password, konfirmasi = 'Y';
 
     init_table();
     for (int i = 0 ; i < 3 ; i++) { 
@@ -284,39 +314,42 @@ int main() {
         printf("Input : ");
         scanf("%d", &menu);
         getchar();
+        // Menu 1
         if (menu == 1) {
-            while(1) {
-                puts("Selamat datang di Gudang Bali");
-                printf("1. Login\n2. Kembali\n");
-                printf("input : ");
-                scanf("%d", &menu);
-                getchar();
-                if (menu == 1) {
-                    puts("Silakan login");
-                    puts("\nMasukan user dan password");
-                    printf("Username : ");
-                    scanf("%s", user_username);
-                    getchar();
-                    printf("Password : ");
-                    user_password = get_pwd();
-                    if (check_login(user_username, user_password, 0) == 1) {
-                        puts("Berhasil login!");
-                        puts("Tekan enter untuk melanjutkan");
-                        getchar();
-                        break;
-                    }
-                    else {
-                        puts("\nUsername atau password salah");
-                        puts("Tekan enter untuk kembali");
-                        getchar();
-                    }
-                }
-                else if (menu == 2) {
-                    kembali = 1;
-                    break;
-                }
-            }
-            if (kembali == 1) continue;
+            // Login Feature
+            // while(1) {
+            //     puts("Selamat datang di Gudang Bali");
+            //     printf("1. Login\n2. Kembali\n");
+            //     printf("input : ");
+            //     scanf("%d", &menu);
+            //     getchar();
+            //     if (menu == 1) {
+            //         puts("Silakan login");
+            //         puts("\nMasukan user dan password");
+            //         printf("Username : ");
+            //         scanf("%s", user_username);
+            //         getchar();
+            //         printf("Password : ");
+            //         user_password = get_pwd();
+            //         if (check_login(user_username, user_password, 0) == 1) {
+            //             puts("Berhasil login!");
+            //             puts("Tekan enter untuk melanjutkan");
+            //             getchar();
+            //             break;
+            //         }
+            //         else {
+            //             puts("\nUsername atau password salah");
+            //             puts("Tekan enter untuk kembali");
+            //             getchar();
+            //         }
+            //     }
+            //     else if (menu == 2) {
+            //         kembali = 1;
+            //         break;
+            //     }
+            // }
+            // if (kembali == 1) continue;
+
             clear();
             while(1) {
                 puts("MENU");
@@ -328,11 +361,11 @@ int main() {
                 getchar();
                 if (menu == 1) {
                     puts("Masukan keterangan barang");
-                    counter == 0 ? list_barang_gudang = buffer_barang() : insert(&list_barang_gudang);
+                    counter == 0 ? list_barang_gudang_bali = initialize_node_barang() : insert(&list_barang_gudang_bali);
                     counter++;
                 }
                 else if (menu == 2) {
-                    list_akan_dikirim(&list_barang_gudang, &list_kirim);
+                    list_akan_dikirim(&list_barang_gudang_bali, &list_kirim);
                     sort(list_kirim.muatan, list_kirim.banyak_barang);
                     masuk_truck(&list_kirim, &truck[partai_bali]);
                     puts("Barang di dalam truck");
@@ -346,52 +379,90 @@ int main() {
                         printf("Volume   : %u\n", truck[partai_bali].muatan[i].volume);
                         puts("=====================================================");
                     }
+                    puts("Truck akan langsung dikirim");
+                    partai_bali++;
                 }
                 else if (menu == 3) {
-                    lihat_gudang(list_barang_gudang);
+                    lihat_gudang(list_barang_gudang_bali);
                 }
                 else if (menu == 4) {
                     break;
                 }
             }
         }
+        // Menu 2
         else if (menu == 2) {
-            puts("Selamat datang di Gudang Bali");
-            printf("1. Login\n2. Kembali");
-            scanf("%d", &menu);
-            getchar();
-            while (1) {
+            // Login Feature
+            // while(1) {
+            //     puts("Selamat datang di Gudang Jawa");
+            //     printf("1. Login\n2. Kembali\n");
+            //     printf("input : ");
+            //     scanf("%d", &menu);
+            //     getchar();
+            //     if (menu == 1) {
+            //         puts("Silakan login");
+            //         puts("\nMasukan user dan password");
+            //         printf("Username : ");
+            //         scanf("%s", user_username);
+            //         getchar();
+            //         printf("Password : ");
+            //         user_password = get_pwd();
+            //         if (check_login(user_username, user_password, 1) == 1) {
+            //             puts("Berhasil login!");
+            //             puts("Tekan enter untuk melanjutkan");
+            //             getchar();
+            //             break;
+            //         }
+            //         else {
+            //             puts("\nUsername atau password salah");
+            //             puts("Tekan enter untuk kembali");
+            //             getchar();
+            //         }
+            //     }
+            //     else if (menu == 2) {
+            //         kembali = 1;
+            //         break;
+            //     }
+            // }
+            // if (kembali == 1) continue;
+            //
+            clear();
+            while(1) {
+                puts("MENU");
+                puts("1. Konfirmasi kedatangan truck");
+                puts("2. Kirim pesanan ke pelanggan");
+                puts("3. Melihat isi gudang");
+                puts("4. Kembali");
+                scanf("%d", &menu);
+                getchar();
+
                 if (menu == 1) {
-                    puts("Silakan login");
-                    puts("\nMasukan user dan password");
-                    printf("Username : ");
-                    scanf("%s", user_username);                   
+                    printf("Apakah truck partai %d sudah datang?\nInput (Y/y/n) : ", partai_jawa + 1);
+                    scanf("%c", &konfirmasi);
                     getchar();
-                    printf("Password : ");
-                    user_password = get_pwd();
-                    if (check_login(user_username, user_password, 1) == 1) {
-                        puts("Berhasil login!");
-                        puts("Tekan enter untuk melanjutkan");
+                    if (konfirmasi == 'y' || konfirmasi == 'Y') {
+                        printf("Tekan enter untuk memasukan barang dari truck ke gudang");
                         getchar();
-                        break;
+                        list_barang_gudang_jawa = masuk_gudang_jawa(truck, partai_jawa);
+                        partai_jawa++;
                     }
                     else {
-                        puts("Username atau password salah");
-                        puts("Tekan enter untuk kembali");
-                        getchar();
+                        continue;
                     }
                 }
                 else if (menu == 2) {
-                    kembali = 1;
+
+                }
+                else if (menu == 3) {
+                    lihat_gudang(list_barang_gudang_jawa);
+                }
+                else if (menu == 4) {
                     break;
                 }
             }
-            if (kembali == 1) break;
-            clear();
         }
+        // Menu 3
         else if (menu == 3) {
-            // DONT TOUCH!!!!!
-            // ITS WORK
             clear();
             puts("HALAMAN ADMIN");
             char user_admin[6], *pwd_admin;
