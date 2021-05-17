@@ -35,6 +35,15 @@ typedef struct container {
     barang *muatan;
 } container;
 
+// Keperluan Graph
+typedef struct Node {
+    struct Node *next;
+    struct Node *prev;
+    int kota;
+    int hubungan_ketetanggan;
+    int node_divisit[100];
+} Node;
+
 user account[2][MAX_ACCOUNT];
 gudang gudang_bali = {.banyak = 0, .berat = 0}, gudang_jawa = {.banyak = 0, .berat = 0};
 
@@ -225,31 +234,41 @@ void lihat_gudang(barang *ptr_head) {
     puts(" ");
 }
 
-void list_akan_dikirim(barang **list_barang, container *truck){
+void list_akan_dikirim(barang **list_barang, container *array, int region){
     //dequeue
     barang *temp = *list_barang;
-    while((truck->berat_muatan += temp->berat) <= TRUCK_SIZE) {
-        truck->banyak_barang++;
-        gudang_bali.banyak--;
-        gudang_bali.berat -= temp->berat;
+    while((array->berat_muatan += temp->berat) <= TRUCK_SIZE) {
+        array->banyak_barang++;
+        if (region == 0) {
+            gudang_bali.banyak--;
+            gudang_bali.berat -= temp->berat;
+        }
+        else {
+            gudang_jawa.banyak--;
+            gudang_jawa.berat -= temp->berat;
+        }
         if(temp->next != NULL) temp = temp->next;
         else break;
     }
-    if (truck->berat_muatan > TRUCK_SIZE) {
-        truck->berat_muatan -= temp->berat;
-        truck->banyak_barang--;
-        gudang_bali.banyak++;
-        gudang_bali.berat += temp->berat;
+    if (array->berat_muatan > TRUCK_SIZE) {
+        array->berat_muatan -= temp->berat;
+        if(region == 0) {
+            gudang_bali.banyak++;
+            gudang_bali.berat += temp->berat;
+        }
+        else {
+            gudang_jawa.banyak++;
+            gudang_jawa.berat += temp->berat;
+        }
     }
-    truck->muatan = (barang*) malloc(truck->banyak_barang * sizeof(barang));
-    for (int i = 0 ; i < truck->banyak_barang ; i++) {
-        truck->muatan[i] = **list_barang;
+    array->muatan = (barang*) malloc(array->banyak_barang * sizeof(barang));
+    for (int i = 0 ; i < array->banyak_barang ; i++) {
+        array->muatan[i] = **list_barang;
         *list_barang = (*list_barang)->next;
     }
 }
 
 void sort(barang *unsorted, int banyak_barang) {
-    printf("here2");
     int banyak_unsorted = banyak_barang;
     barang temp;
     for (int i = banyak_unsorted - 1; i > 0;i--) {
@@ -274,7 +293,7 @@ void masuk_truck(container *list, container *truck) {
 barang *masuk_gudang_jawa(container *truck, int partai) {
     barang *head = NULL, *temp_node, *temp;
     
-    for(int i = truck[partai].banyak_barang - 1; i > 0 ; i--) {
+    for(int i = truck[partai].banyak_barang - 1; i >= 0 ; i--) {
         temp_node = (barang*) malloc(sizeof(barang));
         *temp_node = truck[partai].muatan[i];
         gudang_jawa.banyak++;
@@ -293,12 +312,132 @@ barang *masuk_gudang_jawa(container *truck, int partai) {
     return head;
 }
 
+Node *hamilton(int jumlah_node, int matriks_ketetanggaan[][jumlah_node]) {
+
+    int awal = 0, stop, skip, sol_set_tersedia = 0, node_sebelum = -1;
+    int node_dalam_stack; // * keperluan print node saja
+    Node *list_temp_solution;
+    Node *head;
+    Node *tail;
+    Node *solution_set = (Node*) malloc (sizeof(Node) * jumlah_node);
+
+    // * list_temp_solution ini maksudnya solutionset yang dibuat jadi LinkedList
+    list_temp_solution = (Node*) malloc(sizeof(Node));
+    list_temp_solution->hubungan_ketetanggan = 0;
+    list_temp_solution->kota = awal;
+    list_temp_solution->next = NULL;
+    list_temp_solution->prev = NULL;
+
+    // * ini inisialisasi ngasi tau bahwa setiap node BELUM penrah divisit
+    // * karena nanti pakai backtracking.
+    for (int i = 0; i < jumlah_node; i++) {
+        list_temp_solution->node_divisit[i] = 0;
+    }
+
+    // * circular doubly linkedlist
+    head = list_temp_solution;
+    tail = list_temp_solution;
+
+    // * stop kalok misalkan dia kembali ke awal dan semua tetangga ada di solution set (success)
+    // * atau kembali ke awal dan semua tetangga sudah di visit, tetapi tidak semua ada di solution set (fail)
+    stop = 0;
+    // * skip = 0 itu artinya kalau ditemuin tetangga yang belum pernah divisit
+    skip = 0;
+    while (stop == 0) {
+
+        list_temp_solution = head;
+        node_dalam_stack = 1;
+        // * ini untuk keperuan ngeprint node saja, ngecek berapa jumlah node didalam linkedlist solution set
+        while (list_temp_solution->next != NULL) {
+            list_temp_solution = list_temp_solution->next;
+            node_dalam_stack++;
+        }
+        // * reset state skip
+        skip = 0;
+        // * for loop untuk ngecek tetangga apakah dia sudah pernah divsit oleh node yang sedang ditunjuk
+        for (int i = 0; i < jumlah_node; i++) {
+            // * kalok ketemu tetangga, dia bukan node awal, belum di skip, brarti gass cek
+            if (i != tail->kota && matriks_ketetanggaan[tail->kota][i] > 0 && i != awal && skip == 0) {
+                list_temp_solution = head;
+                // * node_sebelum = 0 itu artinya node yang ditunjuk belum ada di solution set
+                node_sebelum = 0;
+                while (list_temp_solution->next != NULL) {
+                    list_temp_solution = list_temp_solution->next;
+                    if (list_temp_solution->kota == i) {
+                        node_sebelum = 1;
+                        break;
+                    }
+                }
+                if (list_temp_solution->node_divisit[i] == 1) {
+                    node_sebelum = 1;
+                }
+                // ? kenapa make array?
+                if (node_sebelum == 0) {
+                    list_temp_solution = (Node*) malloc(sizeof(Node));
+
+                    list_temp_solution->hubungan_ketetanggan = matriks_ketetanggaan[tail->kota][i];
+                    list_temp_solution->kota = i;
+                    list_temp_solution->prev = tail;
+                    tail->next = list_temp_solution;
+                    tail->node_divisit[i] = 1;
+                    list_temp_solution->next = NULL;
+                    tail = list_temp_solution;
+
+                    for (int j = 0; j < jumlah_node; j++) {
+                        list_temp_solution->node_divisit[j] = 0;
+                    }
+
+                    list_temp_solution = head;
+
+                    skip = 1;
+                }
+                // * ini else if untuk misalkan solusi ditemukan 
+                // * kalok yang lagi diperiksa == awal, dan nodeDalam solution set sama dengan jumlah node
+            } 
+            else if (i == awal && node_dalam_stack == jumlah_node && matriks_ketetanggaan[tail->kota][i] > 0) {
+                list_temp_solution = (Node*) malloc(sizeof(Node));
+
+                list_temp_solution->hubungan_ketetanggan = matriks_ketetanggaan[tail->kota][i];
+                list_temp_solution->kota = i;
+                list_temp_solution->prev = tail;
+                tail->next = list_temp_solution;
+                list_temp_solution->next = NULL;
+                tail = list_temp_solution;
+
+                list_temp_solution = head;
+                skip = 1;
+                stop = 1;
+            }
+        }
+        // * atau kalok kembali ke awal tetapi solutionset belum sebanyak jumlah kota
+        // * atau jalan buntu tetapi belum kembali ke awal
+        if (skip == 0) {
+            if (tail->prev != NULL) {
+                list_temp_solution = tail->prev;
+                list_temp_solution->next = NULL;
+                
+                free(tail);
+                tail = list_temp_solution;
+                // * ini kalok gagal
+            } else {
+                printf("\nMohon, maaf. Sistem graph tidak dapat menentukan alamat secara otomatis. Silakan pakai otak Anda sendiri\n");
+                stop = 1;
+                return NULL;
+            }
+        }
+        printf("\n");
+    }
+    return head;
+}
+
 int main() {
     barang *list_barang_gudang_bali = NULL, *list_barang_gudang_jawa = NULL;
     int counter = 0, partai_bali = 0, partai_jawa = 0, menu;
     int banyak_barang_truck = 0, berat_barang_truck = 0, kembali;
+    int partai_kurir = 0;
     container truck[3], list_kirim = {.berat_muatan = 0, .banyak_barang = 0};
-    char user_username[50], *user_password, konfirmasi = 'Y';
+    container kurir = {.berat_muatan = 0, .banyak_barang = 0};
+    char user_username[50], *user_password, konfirmasi;
 
     init_table();
     for (int i = 0 ; i < 3 ; i++) { 
@@ -365,7 +504,7 @@ int main() {
                     counter++;
                 }
                 else if (menu == 2) {
-                    list_akan_dikirim(&list_barang_gudang_bali, &list_kirim);
+                    list_akan_dikirim(&list_barang_gudang_bali, &list_kirim, 0);
                     sort(list_kirim.muatan, list_kirim.banyak_barang);
                     masuk_truck(&list_kirim, &truck[partai_bali]);
                     puts("Barang di dalam truck");
@@ -381,6 +520,7 @@ int main() {
                     }
                     puts("Truck akan langsung dikirim");
                     partai_bali++;
+                    counter = 0;
                 }
                 else if (menu == 3) {
                     lihat_gudang(list_barang_gudang_bali);
@@ -451,10 +591,68 @@ int main() {
                     }
                 }
                 else if (menu == 2) {
-                    
+                    if (list_barang_gudang_jawa != NULL) {
+                        list_akan_dikirim(&list_barang_gudang_jawa, &kurir, 1);
+                        char indexing_alamat[kurir.banyak_barang + 1][50];
+                        for (int i = 0 ; i < kurir.banyak_barang + 1 ; i++) {
+                            if (i == 0) {
+                                strcpy(indexing_alamat[i], "Kantor si Kang Paket");
+                                continue;
+                            }
+                            strcpy(indexing_alamat[i], kurir.muatan[i-1].penerima);
+                        }
+                        int matriks_ketetanggan[kurir.banyak_barang + 1][kurir.banyak_barang + 1];
+                        int hubungan;
+                        for (int i = 0 ; i < kurir.banyak_barang + 1; i++) {
+                            printf("Hubungan alamat %s\n", indexing_alamat[i]);
+                            printf("Masukan 1 apabila terdapat hubungan, 0 jika tidak\n");
+                            for (int j = i ; j < kurir.banyak_barang + 1; j++) {
+                                if (i == j) {
+                                    matriks_ketetanggan[i][j] = 0;
+                                    continue;
+                                }
+                                printf("\tHubungan alamat %s dengan alamat %s", indexing_alamat[i], indexing_alamat[j]);
+                                scanf("%d", &hubungan);
+                                getchar();
+                                matriks_ketetanggan[i][j] = hubungan;
+                                matriks_ketetanggan[j][i] = hubungan;
+                            }
+                        }
+                        Node *solution = hamilton(kurir.banyak_barang + 1, matriks_ketetanggan);
+                        if (solution != NULL) {
+                            while(solution->next != NULL) {
+                                printf("%s", indexing_alamat[solution->kota]);
+                                solution = solution->next;
+                                if (solution != NULL) printf(" -> ");
+                            }
+                            printf("%s", indexing_alamat[solution->kota]);
+                        }
+                        else {
+
+                        }
+                        printf("\n");
+                    }
+
                 }
                 else if (menu == 3) {
-                    lihat_gudang(list_barang_gudang_jawa);
+                    puts("MENU");
+                    puts("1. Lihat gudang keseluruhan");
+                    puts("2. Cari barang");
+                    puts("3. Kembali");
+                    printf("Input : ");
+                    scanf("%d", &menu);
+                    getchar();
+                    
+                    if (menu == 1) {
+                        lihat_gudang(list_barang_gudang_jawa);
+                        printf("\nBanyak barang = %d", gudang_jawa.banyak);
+                    }
+                    else if (menu == 2) {
+
+                    }
+                    else if (menu == 3) {
+                        continue;
+                    }
                 }
                 else if (menu == 4) {
                     break;

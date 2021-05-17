@@ -38,4 +38,5 @@ $RECYCLE.BIN/
 ### Specifically for my workspace###
 *.vsdx
 test.*
+test1.*
 *.exe
