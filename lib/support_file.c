@@ -82,7 +82,7 @@ void remove_account(user temp_data_account, int region) {
     do {
         if (strcmp(account[region][temp_geser].username, temp_data_account.username) == 0) {
             account[region][index].apakah_terisi = 0;
-            account[region][temp_geser].username[0] = "\0";
+            account[region][temp_geser].username[0] = '\0';
             puts("\tAkun berhasil dihapus!!");
             return ;
         }
@@ -476,7 +476,6 @@ barang *find(barang **list_barang_gudang, char *dicari) {
         puts("\n\t===============");
         puts("\t|Gudang kosong|");
         puts("\t===============");
-
     }
 
 }
