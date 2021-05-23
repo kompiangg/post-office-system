@@ -1,0 +1,1 @@
+gcc main.c lib\support_file.c -o main && .\main

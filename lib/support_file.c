@@ -177,7 +177,7 @@ barang *initialize_node_barang() {
         printf("\tMasukan berat barang (dalam kg): ");
         scanf("%u", &(temp_input->berat));
         getchar();
-        if (temp_input->berat > 100) puts("\tBarang yang boleh dikirim hanya\n\tyang beratnya kurang dari 100 kg");
+        if (temp_input->berat > 100) puts("\tBarang yang dapat dikirim hanya\n\tyang beratnya kurang dari atau sama dengan 100 kg");
     } while(temp_input->berat > 100);
     printf("\tMasukan volume barang (dalam m^3): ");
     scanf("%u", &(temp_input->volume));
