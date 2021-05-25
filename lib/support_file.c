@@ -96,9 +96,6 @@ int check_login(char *username, char *password, int region) {
     int index = hash_func(username);
     int temp_geser = index;
 
-    if (account[region][index].apakah_terisi == 0) {
-        return 0;
-    };
     do {
         if (account[region][temp_geser].apakah_terisi == 1 && \
             strcmp(username, account[region][temp_geser].username) == 0 && \
@@ -283,7 +280,7 @@ void list_akan_dikirim(barang **list_barang, container *array, int region){
     array->muatan = (barang*) malloc(array->banyak_barang * sizeof(barang));
     for (int i = 0 ; i < array->banyak_barang ; i++) {
         array->muatan[i] = **list_barang;
-        *list_barang = (*list_barang)->next;
+        *list_barang = (**list_barang).next;
     }
 }
 

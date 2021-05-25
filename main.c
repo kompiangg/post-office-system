@@ -137,11 +137,8 @@ int main() {
                         continue;
                     } 
                     list_akan_dikirim(&list_barang_gudang_bali, &list_kirim, 0);
-                    puts("here 1");
                     sort(list_kirim.muatan, list_kirim.banyak_barang);
-                    puts("here 2");
                     masuk_truck(&list_kirim, &truck[partai_bali]);
-                    puts("here 3");
                     puts("\tBarang di dalam truck");
                     puts("\t=====================================================");
                     for(int i = 0 ; i < truck[partai_bali].banyak_barang ; i++) {
@@ -338,7 +335,8 @@ int main() {
                         }
                         Node *solution = hamilton(kurir.banyak_barang + 1, matriks_ketetanggan);
                         if (solution != NULL) {
-                            printf("\t\t");
+                            puts("\tJalur Pengiriman");
+                            printf("\t");
                             while(solution->next != NULL) {
                                 printf("%s", indexing_alamat[solution->kota]);
                                 solution = solution->next;
