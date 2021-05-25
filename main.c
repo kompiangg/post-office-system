@@ -7,7 +7,7 @@
 int main() {
     barang *list_barang_gudang_bali = NULL, *list_barang_gudang_jawa = NULL;
     int counter = 0, partai_bali = 0, partai_jawa = 0, menu;
-    int banyak_barang_truck = 0, berat_barang_truck = 0, kembali;
+    int banyak_barang_truck = 0, berat_barang_truck = 0, kembali = 0;
     int partai_kurir = 0;
     container truck[3], list_kirim = {.berat_muatan = 0, .banyak_barang = 0};
     container kurir = {.berat_muatan = 0, .banyak_barang = 0};
@@ -29,8 +29,8 @@ int main() {
     puts("= Wahyu Vidiadivani                   = 2008561082 =");
     puts("= I Ketut Teguh Wibawa Lessmana ...   = 2008561084 =");
     puts("====================================================");
-    getchar();
-
+    tahan();
+    
     for (int i = 0 ; i < 3 ; i++) { 
         truck[i].berat_muatan = 0; truck[i].banyak_barang = 0;
     }
@@ -94,18 +94,13 @@ int main() {
                 else continue;
             }
 
-            if (kembali == 1) continue;
+            if (kembali == 1) {
+                kembali = 0;
+                continue;
+            }
 
             clear();
             while(1) {
-                if (partai_bali == 3) {
-                    si_kang_paket();
-                    puts("\t\t=========");
-                    puts("\t\t| Tutup |");
-                    puts("\t\t=========");
-                    tahan();
-                    break;
-                } 
                 si_kang_paket();
                 puts("\t==================================");
                 puts("\t              MENU");
@@ -120,16 +115,33 @@ int main() {
                 getchar();
                 if (menu == 1) {
                     si_kang_paket();
-                    puts("\t    Masukan keterangan barang\n");
+                    if (partai_bali == 3) {
+                        puts("\t\t=========");
+                        puts("\t\t| Tutup |");
+                        puts("\t\t=========");
+                        tahan();
+                        continue;
+                    } 
+                    puts("\t    Masukkan keterangan barang\n");
                     counter == 0 ? list_barang_gudang_bali = initialize_node_barang() : insert(&list_barang_gudang_bali);
                     counter++;
                     tahan();
                 }
                 else if (menu == 2) {
                     si_kang_paket();
+                    if (partai_bali == 3) {
+                        puts("\t\t=========");
+                        puts("\t\t| Tutup |");
+                        puts("\t\t=========");
+                        tahan();
+                        continue;
+                    } 
                     list_akan_dikirim(&list_barang_gudang_bali, &list_kirim, 0);
+                    puts("here 1");
                     sort(list_kirim.muatan, list_kirim.banyak_barang);
+                    puts("here 2");
                     masuk_truck(&list_kirim, &truck[partai_bali]);
+                    puts("here 3");
                     puts("\tBarang di dalam truck");
                     puts("\t=====================================================");
                     for(int i = 0 ; i < truck[partai_bali].banyak_barang ; i++) {
@@ -242,18 +254,13 @@ int main() {
                     }
                     else continue;
             }
-            if (kembali == 1) continue;
+            if (kembali == 1) {
+                kembali = 0;
+                continue;
+            }
             
             clear();
             while(1) {
-                if (partai_jawa == 3) {
-                    si_kang_paket();
-                    puts("\t\t=========");
-                    puts("\t\t| Tutup |");
-                    puts("\t\t=========");
-                    tahan();
-                    break;
-                } 
                 si_kang_paket();
                 puts("\t==================================");
                 puts("\t              MENU");
@@ -269,6 +276,13 @@ int main() {
 
                 if (menu == 1) {
                     si_kang_paket();
+                    if (partai_jawa == 3 || partai_jawa == 4) {
+                        puts("\t\t=========");
+                        puts("\t\t| Tutup |");
+                        puts("\t\t=========");
+                        tahan();
+                        continue;
+                    } 
                     printf("\tApakah truck partai %d sudah datang?\n\tInput (Y/y/n) : ", partai_jawa + 1);
                     scanf("%c", &konfirmasi);
                     getchar();
@@ -283,7 +297,18 @@ int main() {
                     }
                 }
                 else if (menu == 2) {
-                    si_kang_paket();
+                    if (partai_jawa == 3) {
+                        puts("\t\tHanya tersisa sekali pengiriman");
+                        partai_jawa++;
+                    }
+                    else if (partai_jawa == 4) {
+                        si_kang_paket();
+                        puts("\t\t=========");
+                        puts("\t\t| Tutup |");
+                        puts("\t\t=========");
+                        tahan();
+                        continue;
+                    } 
                     if (list_barang_gudang_jawa != NULL) {
                         list_akan_dikirim(&list_barang_gudang_jawa, &kurir, 1);
                         char indexing_alamat[kurir.banyak_barang + 1][50];
@@ -313,6 +338,7 @@ int main() {
                         }
                         Node *solution = hamilton(kurir.banyak_barang + 1, matriks_ketetanggan);
                         if (solution != NULL) {
+                            printf("\t\t");
                             while(solution->next != NULL) {
                                 printf("%s", indexing_alamat[solution->kota]);
                                 solution = solution->next;
@@ -327,6 +353,13 @@ int main() {
                 }
                 else if (menu == 3) {
                     si_kang_paket();
+                    if (partai_jawa == 3 || partai_jawa == 4) {
+                        puts("\t\t=========");
+                        puts("\t\t| Tutup |");
+                        puts("\t\t=========");
+                        tahan();
+                        continue;
+                    } 
                     puts("\t==================================");
                     puts("\t              MENU");
                     puts("\t==================================");
@@ -439,6 +472,11 @@ int main() {
                             tahan();
                         }
                         else if (menu == 0) break;
+                        else {
+                            puts("Masukkan angka 0-2");
+                            getchar();
+                            continue;
+                        }
                     }
                 }
                 else if (menu == 2) {
@@ -481,6 +519,11 @@ int main() {
         }
         else if (menu == 0) {
             return 0;
+        }
+        else {
+            puts("Masukkan angka 0-3");
+            tahan();
+            continue;
         }
     }
 }
