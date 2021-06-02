@@ -43,3 +43,4 @@ test1.*
 *.exe
 support_item
 support_item/*
+!main.exe
